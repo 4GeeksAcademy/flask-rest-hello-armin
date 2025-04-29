@@ -1,24 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Boolean, ForeignKey, DateTime
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
 
 db = SQLAlchemy()
 
 
 class User(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(
-        String(80), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(256), nullable=False)
-    full_name: Mapped[str] = mapped_column(String(120), nullable=False)
-    bio: Mapped[str] = mapped_column(Text, nullable=True)
-    profile_image_url: Mapped[str] = mapped_column(String(256), nullable=True)
-    is_active: Mapped[bool] = mapped_column(
-        Boolean(), nullable=False, default=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow)
+    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     # Relaciones
     posts = relationship("Post", back_populates="user")
@@ -42,14 +35,9 @@ class User(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "username": self.username,
             "email": self.email,
-            "full_name": self.full_name,
-            "bio": self.bio,
-            "profile_image_url": self.profile_image_url,
-            "is_active": self.is_active,
-            "created_at": self.created_at
             # No incluimos password por seguridad
+            "is_active": self.is_active
         }
 
 
@@ -57,7 +45,7 @@ class Post(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     image_url: Mapped[str] = mapped_column(String(256), nullable=False)
-    caption: Mapped[str] = mapped_column(Text, nullable=True)
+    caption: Mapped[str] = mapped_column(String(500), nullable=True)
     location: Mapped[str] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow)
@@ -86,7 +74,7 @@ class Comment(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     post_id: Mapped[int] = mapped_column(ForeignKey("post.id"))
-    text: Mapped[str] = mapped_column(Text, nullable=False)
+    text: Mapped[str] = mapped_column(String(500), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow)
 
